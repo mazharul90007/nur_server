@@ -1,0 +1,63 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Surah metadata (1–114). Names and revelation info from quran-metadata-surah-name.json.
+model Surah {
+  number     Int    @id
+  nameArabic String @db.Text
+  /// English name for lists (e.g. Al-Fatihah) — from metadata `name_simple`
+  nameEnglish String @db.Text
+  /// Longer English form with diacritics — from metadata `name`
+  nameEnglishLong String? @db.Text
+  revelationPlace String
+  revelationOrder Int
+  versesCount     Int
+  bismillahPre    Boolean
+
+  ayahs Ayah[]
+}
+
+/// One row per verse. Arabic from Indo-Pak JSON (`ayah` index within surah).
+model Ayah {
+  id            Int     @id @default(autoincrement())
+  surahNumber   Int
+  surah         Surah   @relation(fields: [surahNumber], references: [number], onDelete: Cascade)
+  numberInSurah Int
+  textArabic    String  @db.Text
+  /// Optional; unused for Indo-Pak JSON source (null on seed).
+  bismillah     String? @db.Text
+
+  translations AyahTranslation[]
+
+  @@unique([surahNumber, numberInSurah])
+  @@index([surahNumber])
+}
+
+/// e.g. `en.sahih-international`, `bn.mujibur-rahman`
+model TranslationEdition {
+  id       Int    @id @default(autoincrement())
+  code     String @unique
+  language String
+  name     String
+
+  translations AyahTranslation[]
+}
+
+model AyahTranslation {
+  id        Int                @id @default(autoincrement())
+  ayahId    Int
+  ayah      Ayah               @relation(fields: [ayahId], references: [id], onDelete: Cascade)
+  editionId Int
+  edition   TranslationEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  text      String             @db.Text
+
+  @@unique([ayahId, editionId])
+  @@index([editionId])
+}
