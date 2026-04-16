@@ -8,13 +8,10 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Surah metadata (1–114). Names and revelation info from quran-metadata-surah-name.json.
 model Surah {
-  number     Int    @id
-  nameArabic String @db.Text
-  /// English name for lists (e.g. Al-Fatihah) — from metadata `name_simple`
-  nameEnglish String @db.Text
-  /// Longer English form with diacritics — from metadata `name`
+  number          Int     @id
+  nameArabic      String  @db.Text
+  nameEnglish     String  @db.Text
   nameEnglishLong String? @db.Text
   revelationPlace String
   revelationOrder Int
@@ -24,14 +21,12 @@ model Surah {
   ayahs Ayah[]
 }
 
-/// One row per verse. Arabic from Indo-Pak JSON (`ayah` index within surah).
 model Ayah {
   id            Int     @id @default(autoincrement())
   surahNumber   Int
   surah         Surah   @relation(fields: [surahNumber], references: [number], onDelete: Cascade)
   numberInSurah Int
   textArabic    String  @db.Text
-  /// Optional; unused for Indo-Pak JSON source (null on seed).
   bismillah     String? @db.Text
 
   translations AyahTranslation[]
@@ -40,7 +35,6 @@ model Ayah {
   @@index([surahNumber])
 }
 
-/// e.g. `en.sahih-international`, `bn.mujibur-rahman`
 model TranslationEdition {
   id       Int    @id @default(autoincrement())
   code     String @unique
