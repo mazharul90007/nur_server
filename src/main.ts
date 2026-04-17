@@ -8,13 +8,20 @@ import { AppModule } from './app.module';
 /** Vercel Functions: allow longer cold starts (DB / Prisma). */
 export const maxDuration = 60;
 
-function corsOrigins(): string | string[] {
-  const url = process.env.FRONTEND_URL;
-  const base = ['http://localhost:3000', 'http://127.0.0.1:3000'];
-  if (url?.trim()) {
-    return [...base, url.trim()];
-  }
-  return base;
+/** Local dev + default deployed frontend (README live URL). Add more via comma-separated FRONTEND_URL. */
+function corsOrigins(): string[] {
+  const defaults = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://nur-frontend-beta.vercel.app',
+  ];
+  const raw = process.env.FRONTEND_URL;
+  if (!raw?.trim()) return defaults;
+  const extra = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [...new Set([...defaults, ...extra])];
 }
 
 async function createNestExpressApp(): Promise<express.Express> {
