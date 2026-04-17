@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install && npm run db:generate",
+  "buildCommand": "npm run build",
+  "regions": ["iad1"]
+}
